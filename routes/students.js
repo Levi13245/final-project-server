@@ -1,42 +1,18 @@
-/*==================================================
-/routes/students.js
-
-It defines all the students-related routes.
-==================================================*/
-// Import Express module
 const express = require('express');
-// Create an Express router function called "router"
-const router = express.Router();
-// Import database models
+const router = express.Router();  // This is the critical missing line
 const { Student, Campus } = require('../database/models');
-
-// Import a middleware to replace "try and catch" for request handler, for a concise coding (fewer lines of code)
 const ash = require('express-async-handler');
 
-/* GET ALL STUDENTS: async/await using "try-catch" */
-// router.get('/', async (req, res, next) => {
-//   try {
-//     let students = await Student.findAll({include: [Campus]});
-//     res.status(200).json(students);
-//   } 
-//   catch(err) {
-//     next(err);
-//   }
-// });
-
-/* GET ALL STUDENTS: async/await using express-async-handler (ash) */
-// Automatically catches any error and sends to Routing Error-Handling Middleware (app.js)
-// It is the same as using "try-catch" and calling next(error)
+/* GET ALL STUDENTS */
 router.get('/', ash(async(req, res) => {
   let students = await Student.findAll({include: [Campus]});
-  res.status(200).json(students);  // Status code 200 OK - request succeeded
+  res.status(200).json(students);
 }));
 
 /* GET STUDENT BY ID */
 router.get('/:id', ash(async(req, res) => {
-  // Find student by Primary Key
-  let student = await Student.findByPk(req.params.id, {include: [Campus]});  // Get the student and its associated campus
-  res.status(200).json(student);  // Status code 200 OK - request succeeded
+  let student = await Student.findByPk(req.params.id, {include: [Campus]});
+  res.status(200).json(student);
 }));
 
 /* ADD NEW STUDENT */
@@ -59,13 +35,11 @@ router.delete('/:id', function(req, res, next) {
 
 /* EDIT STUDENT */
 router.put('/:id', ash(async(req, res) => {
-  await Student.update(req.body,
-        { where: {id: req.params.id} }
-  );
-  // Find student by Primary Key
-  let student = await Student.findByPk(req.params.id);
-  res.status(201).json(student);  // Status code 201 Created - successful creation of a resource
+  await Student.update(req.body, {
+    where: {id: req.params.id}
+  });
+  let student = await Student.findByPk(req.params.id, {include: [Campus]});
+  res.status(200).json(student);
 }));
 
-// Export router, so that it can be imported to construct the apiRouter (app.js)
 module.exports = router;
